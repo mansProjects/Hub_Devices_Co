@@ -16,7 +16,7 @@ jobs:
         with:
           channel: stable
       - run: flutter pub get
-      - run: flutter build web --release --base-href "/Hub_Devices_Co./"
+      - run: flutter build web --release --base-href "/Hub_Devices_Co/"
       - uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
