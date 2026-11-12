@@ -50,7 +50,7 @@ class PrecommandePage extends StatelessWidget {
                   valueDay: '${commande.joursRestants}',
                   titleDay: commande.joursRestants <= 1 ? 'jour restant' : 'jours restants',
                   subtitleDay: 'Avant l\'arrivée du colis.',
-                  progressBar: 0.17,
+                  progressBar: commande.progression,
                   progressBarLabel: 'de la livraison atteinte !',
                       ),
             const SizedBox(height: 24),

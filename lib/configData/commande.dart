@@ -58,6 +58,9 @@ class Commande {
     if (restant > dureeLivraisonJours) return dureeLivraisonJours;
     return restant;
   }
+    double get progression =>
+      (dureeLivraisonJours - joursRestants) / dureeLivraisonJours;
+      
     String get prixAffiche {
     final t = total.trim();
     if (t.isEmpty) return '';
