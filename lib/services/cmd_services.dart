@@ -5,7 +5,7 @@ import '../configData/commande.dart';
 
 
 class CommandeService {
-  static const String _baseUrl = 'https://script.google.com/macros/s/AKfycbxGTJ1MkIUTNIzFz9mgU8vW0HrFU3YOO-tOKwZQLzQrO9lZhR5ouLOq377ntMf4GQAn/exec';
+  static const String _baseUrl = 'https://script.google.com/macros/s/AKfycbxxokmhfTvouprbTf-P2B5IwfO-62LsZV8QJR-My_nGiK6jQ0X4pWycLS-0CUSDMBdq/exec';
   
     Future<String?> envoyerPrecommande({
     required String nom,
