@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../services/cmd_services.dart';
-import '../screens/precommande_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -22,9 +21,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _submit() async {
-    final digits = _controller.text.replaceAll(RegExp(r'\D'), '');
-    if (digits.length < 9) {
-      setState(() => _error = 'Entrez un numéro de téléphone valide.');
+    final code = _controller.text.trim();
+    final nettoye = code.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+    if (nettoye.length < 6) {
+      setState(() => _error = 'Entrez le code reçu sur WhatsApp.');
       return;
     }
 
@@ -34,18 +34,17 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final commande =
-          await _service.chercherParTelephone(_controller.text.trim());
+      final commande = await _service.chercherParCode(code);
       if (!mounted) return;
 
       if (commande == null) {
-        setState(() => _error = 'Aucune précommande trouvée pour ce numéro.');
+        setState(() => _error =
+            'Code invalide. Vérifiez le code reçu sur WhatsApp.');
       } else {
-        Navigator.push(
+        Navigator.pushNamed(
           context,
-          MaterialPageRoute(
-            builder: (_) => PrecommandePage(commande: commande),
-          ),
+          '/suivi/commande',
+          arguments: commande,
         );
       }
     } catch (_) {
@@ -60,6 +59,19 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          tooltip: 'Retour à l\'accueil',
+          onPressed: () => Navigator.pushNamedAndRemoveUntil(
+            context,
+            '/',
+            (route) => false,
+          ),
+        ),
+        title: const Text('Suivi de précommande'),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -70,13 +82,14 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'M A  P R É C O M M A N D E',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                    'Ma précommande',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'Entrez votre numéro de téléphone pour suivre votre commande.',
-                    style: TextStyle(color: Colors.black54,fontSize: 12),
+                    'Entrez le code que nous vous avons envoyé sur WhatsApp '
+                    'pour suivre votre commande.',
+                    style: TextStyle(color: Colors.black54),
                   ),
                   const SizedBox(height: 24),
                   Container(
@@ -84,22 +97,25 @@ class _LoginPageState extends State<LoginPage> {
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       border: Border.all(color: Colors.grey.shade400),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Numéro de téléphone',
-                          style: TextStyle(fontWeight: FontWeight.bold,fontSize: 14),
+                          'Code de suivi',
+                          style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         const SizedBox(height: 8),
                         TextField(
                           controller: _controller,
-                          keyboardType: TextInputType.phone,
+                          textCapitalization: TextCapitalization.characters,
+                          autocorrect: false,
+                          enableSuggestions: false,
                           onSubmitted: (_) => _submit(),
                           decoration: InputDecoration(
-                            hintText: 'Ex : 081 234 5678',
+                            hintText: 'Ex : K7X2-M9QP',
+                            prefixIcon: const Icon(Icons.vpn_key_outlined),
                             errorText: _error,
                             errorMaxLines: 2,
                             border: const OutlineInputBorder(),
@@ -124,6 +140,15 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Center(
+                    child: Text(
+                      'Pas encore de code ? Il arrive sur WhatsApp après '
+                      'vérification de votre paiement.',
+                      style: TextStyle(color: Colors.black54, fontSize: 12),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ],

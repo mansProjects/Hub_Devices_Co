@@ -234,7 +234,7 @@ class _PrecommandeSectionState extends State<PrecommandeSection>
           ),
           const SizedBox(height: 8),
           Text(
-            'Entrez votre numéro de téléphone pour suivre l\'avancement '
+            'Entrez le code reçu sur WhatsApp pour suivre l\'avancement '
             'de votre commande jusqu\'à la livraison.',
             style: TextStyle(
               color: Colors.white.withValues(alpha: 0.88),

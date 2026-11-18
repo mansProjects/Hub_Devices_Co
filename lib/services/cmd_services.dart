@@ -1,61 +1,45 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:typed_data';
 import '../configData/commande.dart';
 
 
 class CommandeService {
-  static const String _baseUrl = 'https://script.google.com/macros/s/AKfycbx9QZwXSOihjkorHhYhHDFWOXQeTx6E6C6ttTG8D-6i2bZzMhNsRJej2LAUhWLo-P9H/exec';
-
-  Future<Commande?> chercherParTelephone(String telephone) async {
-    final uri = Uri.parse(_baseUrl).replace(
-      queryParameters: {'telephone': telephone},
-    );
-
-    final response = await http.get(uri).timeout(const Duration(seconds: 30));
-
-    if (response.statusCode != 200) {
-      throw Exception('Erreur serveur');
-    }
-
-    final data = jsonDecode(utf8.decode(response.bodyBytes));
-
-    if (data['ok'] != true) {
-      return null;
-    }
-    return Commande.fromJson(data['commande']);
-  }
-
-    Future<Offre?> chercherOffre(String code) async {
-    final uri = Uri.parse(_baseUrl).replace(
-      queryParameters: {'action': 'offre', 'code': code.trim()},
-    );
-    final response = await http.get(uri).timeout(const Duration(seconds: 30));
-
-    if (response.statusCode != 200) {
-      throw Exception('Erreur serveur');
-    }
-    final data = jsonDecode(utf8.decode(response.bodyBytes));
-    if (data['ok'] != true) return null;
-
-    return Offre(
-      code: code.trim(),
-      article: data['offre']['article'].toString(),
-      prix: data['offre']['prix'].toString(),
-    );
-  }
-
-  Future<String?> enregistrerPrecommande({
-    required String code,
+  static const String _baseUrl = 'https://script.google.com/macros/s/AKfycbxGTJ1MkIUTNIzFz9mgU8vW0HrFU3YOO-tOKwZQLzQrO9lZhR5ouLOq377ntMf4GQAn/exec';
+  
+    Future<String?> envoyerPrecommande({
     required String nom,
     required String telephone,
+    required String article,
+    required Uint8List preuve,
+    required String preuveType,
   }) async {
+    final response = await http
+        .post(
+          Uri.parse(_baseUrl),
+          headers: {'Content-Type': 'text/plain; charset=utf-8'},
+          body: jsonEncode({
+            'nom': nom,
+            'telephone': telephone,
+            'article': article,
+            'preuveType': preuveType,
+            'preuveBase64': base64Encode(preuve),
+          }),
+        )
+        .timeout(const Duration(seconds: 60));
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur serveur');
+    }
+    final data = jsonDecode(utf8.decode(response.bodyBytes));
+    if (data['ok'] != true) return null;
+
+    return data['reference'].toString();
+  }
+
+    Future<Commande?> chercherParCode(String code) async {
     final uri = Uri.parse(_baseUrl).replace(
-      queryParameters: {
-        'action': 'enregistrer',
-        'code': code,
-        'nom': nom,
-        'telephone': telephone,
-      },
+      queryParameters: {'action': 'suivi_code', 'code': code.trim()},
     );
     final response = await http.get(uri).timeout(const Duration(seconds: 30));
 
@@ -65,7 +49,7 @@ class CommandeService {
     final data = jsonDecode(utf8.decode(response.bodyBytes));
     if (data['ok'] != true) return null;
 
-    return data['numero_client'].toString();
+    return Commande.fromJson(data['commande']);
   }
 }
 class Offre {
