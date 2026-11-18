@@ -1,6 +1,6 @@
 # hub_devices_co
 
-A new Flutter project.
+Hub Devices Co.
 
 ## Getting Started
 
