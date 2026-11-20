@@ -1,8 +1,10 @@
 import 'dart:typed_data';
-import '../services/cmd_services.dart';
-import 'package:flutter/material.dart';
+
+import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../services/cmd_services.dart';
 
 class PrecommanderFormPage extends StatefulWidget {
   const PrecommanderFormPage({super.key});
@@ -15,11 +17,14 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
   static const String _numeroWhatsApp = '243840513896';
   static const int _tailleMaxOctets = 4 * 1024 * 1024; // 4 Mo
 
+  static const Color _fondChamp = Color(0xFFF2F5FB);
+  static const Color _bordure = Color(0xFFD9E2EF);
+  static const Color _texteDoux = Color(0xFF6B7A90);
+
   static const List<String> _etapes = [
-    'Discutez avec nous sur WhatsApp, si ce n\'est pas encore fait avant de remplir le formulaire.',
+    'Discutez avec nous sur WhatsApp, si ce n\'est pas encore fait.',
     'Effectuez le paiement convenu sur WhatsApp.',
     'Remplissez le formulaire ci-dessous.',
-    'Importer votre preuve de paiement (capture d\'ecran)',
     'Cliquez sur Confirmer pour valider la précommande.',
   ];
 
@@ -28,13 +33,13 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
   final _telephoneController = TextEditingController();
   final _articleController = TextEditingController();
   final _picker = ImagePicker();
+  final _service = CommandeService();
 
   Uint8List? _preuveBytes;
   String? _preuveNom;
   String? _preuveErreur;
-  bool _loading = false;
-    final _service = CommandeService();
   String? _erreurEnvoi;
+  bool _loading = false;
 
   @override
   void dispose() {
@@ -43,6 +48,8 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
     _articleController.dispose();
     super.dispose();
   }
+
+  // ---------- Logique ----------
 
   Future<void> _choisirPreuve() async {
     final fichier = await _picker.pickImage(
@@ -88,14 +95,20 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
     }
   }
 
-   String? _detecterType(Uint8List o) {
+  String? _detecterType(Uint8List o) {
     if (o.length > 12) {
       if (o[0] == 0xFF && o[1] == 0xD8 && o[2] == 0xFF) return 'image/jpeg';
       if (o[0] == 0x89 && o[1] == 0x50 && o[2] == 0x4E && o[3] == 0x47) {
         return 'image/png';
       }
-      if (o[0] == 0x52 && o[1] == 0x49 && o[2] == 0x46 && o[3] == 0x46 &&
-          o[8] == 0x57 && o[9] == 0x45 && o[10] == 0x42 && o[11] == 0x50) {
+      if (o[0] == 0x52 &&
+          o[1] == 0x49 &&
+          o[2] == 0x46 &&
+          o[3] == 0x46 &&
+          o[8] == 0x57 &&
+          o[9] == 0x45 &&
+          o[10] == 0x42 &&
+          o[11] == 0x50) {
         return 'image/webp';
       }
     }
@@ -190,19 +203,7 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
     );
   }
 
-  InputDecoration _decoration(String hint, IconData icone) {
-    return InputDecoration(
-      hintText: hint,
-      prefixIcon: Icon(icone),
-      fillColor: const Color.fromARGB(255, 140, 196, 249).withValues(alpha: 0.06),
-      filled: true,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      
-      ),
-    );
-  }
+  // ---------- Page ----------
 
   @override
   Widget build(BuildContext context) {
@@ -219,51 +220,73 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
             (route) => false,
           ),
         ),
-        title: const Text('Avant la précommande'),
+        title: const Text('Précommander'),
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 520),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Formulaire de précommande',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHaut(couleur),
+                        const SizedBox(height: 28),
+                        const Text(
+                          'Remplissez le formulaire',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildFormulaire(),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Étapes à suivre',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  for (int i = 0; i < _etapes.length; i++) ...[
-                    _buildEtape(i + 1, _etapes[i], couleur),
-                    if (i < _etapes.length - 1) const SizedBox(height: 10),
-                  ],
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Nous vous enverrons un code sur WhatsApp pour suivre '
-                    'l\'évolution de votre commande jusqu\'à la livraison.',
-                    style: TextStyle(height: 1.4, fontSize:14),
-                  ),
-                  const SizedBox(height: 28),
-                  const Text(
-                    'Remplissez le formulaire',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildFormulaire(couleur),
-                ],
+                ),
               ),
             ),
-          ),
+            _buildBarreBas(couleur),
+          ],
         ),
       ),
+    );
+  }
+
+  // ---------- HAUT DE PAGE (inchangé) ----------
+
+  Widget _buildHaut(Color couleur) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Formulaire de précommande',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'Étapes à suivre',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        for (int i = 0; i < _etapes.length; i++) ...[
+          _buildEtape(i + 1, _etapes[i], couleur),
+          if (i < _etapes.length - 1) const SizedBox(height: 10),
+        ],
+        const SizedBox(height: 20),
+        const Text(
+          'Nous vous enverrons un code sur WhatsApp pour suivre '
+          'l\'évolution de votre commande jusqu\'à la livraison.',
+          style: TextStyle(height: 1.4),
+        ),
+      ],
     );
   }
 
@@ -273,7 +296,7 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       decoration: BoxDecoration(
         color: couleur.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(30),
         border: Border.all(color: couleur.withValues(alpha: 0.35)),
       ),
       child: Text.rich(
@@ -286,18 +309,45 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
             TextSpan(text: texte),
           ],
         ),
-        style: const TextStyle(fontSize: 12, height: 1.3),
+        style: const TextStyle(fontSize: 14, height: 1.3),
       ),
     );
   }
 
-  Widget _buildFormulaire(Color couleur) {
+  // ---------- BAS DE PAGE (nouveau design) ----------
+
+  InputDecoration _decoration(String hint, IconData icone) {
+    final couleur = Theme.of(context).primaryColor;
+    final erreur = Theme.of(context).colorScheme.error;
+
+    OutlineInputBorder bord(Color c, [double largeur = 1]) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20),
+          borderSide: BorderSide(color: c, width: largeur),
+        );
+
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(color: _texteDoux),
+      prefixIcon: Icon(icone, color: _texteDoux),
+      filled: true,
+      fillColor: _fondChamp,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      border: bord(_bordure),
+      enabledBorder: bord(_bordure),
+      focusedBorder: bord(couleur, 1.5),
+      errorBorder: bord(erreur),
+      focusedErrorBorder: bord(erreur, 1.5),
+    );
+  }
+
+  Widget _buildFormulaire() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color.fromARGB(255, 140, 196, 249)),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: _bordure),
       ),
       child: Form(
         key: _formKey,
@@ -305,7 +355,6 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             TextFormField(
-              
               controller: _nomController,
               textInputAction: TextInputAction.next,
               textCapitalization: TextCapitalization.words,
@@ -322,8 +371,10 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
               controller: _telephoneController,
               keyboardType: TextInputType.phone,
               textInputAction: TextInputAction.next,
-              decoration:
-                  _decoration('Votre numéro de téléphone', Icons.phone_outlined),
+              decoration: _decoration(
+                'Votre numéro de téléphone',
+                Icons.phone_outlined,
+              ),
               validator: (value) {
                 final chiffres = (value ?? '').replaceAll(RegExp(r'\D'), '');
                 if (chiffres.length < 9) {
@@ -347,12 +398,17 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
                 return null;
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 22),
             _buildPreuve(),
-            const SizedBox(height: 24),
+            if (_erreurEnvoi != null) ...[
+              const SizedBox(height: 14),
+              Text(
+                _erreurEnvoi!,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+            ],
+            const SizedBox(height: 20),
             _buildBoutonWhatsApp(),
-            const SizedBox(height: 12),
-            _buildBoutonConfirmer(couleur),
           ],
         ),
       ),
@@ -367,34 +423,35 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
       children: [
         const Text(
           'Preuve de paiement',
-          style: TextStyle(fontWeight: FontWeight.bold,fontSize: 12),
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 4),
         const Text(
           'Capture d\'écran du message d\'envoi d\'argent ou du dépôt.',
-          style: TextStyle(color: Colors.black54, fontSize: 12),
+          style: TextStyle(color: _texteDoux, fontSize: 14, height: 1.3),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         InkWell(
           onTap: _choisirPreuve,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
+              color: _fondChamp,
+              borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: _preuveErreur == null ? Colors.grey.shade600 : erreur,
+                color: _preuveErreur == null ? _bordure : erreur,
               ),
-              borderRadius: BorderRadius.circular(12),
             ),
             child: _preuveBytes == null
                 ? const Row(
                     children: [
-                      Icon(Icons.upload_file_outlined, color: Colors.black54),
+                      Icon(Icons.upload_file_outlined, color: _texteDoux),
                       SizedBox(width: 12),
                       Text(
                         'Importer une capture',
-                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                        style: TextStyle(color: _texteDoux, fontSize: 16),
                       ),
                     ],
                   )
@@ -404,8 +461,8 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
                         borderRadius: BorderRadius.circular(8),
                         child: Image.memory(
                           _preuveBytes!,
-                          width: 36,
-                          height: 36,
+                          width: 40,
+                          height: 40,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -415,13 +472,12 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
                           _preuveNom ?? 'Image choisie',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 12),
                         ),
                       ),
                       const SizedBox(width: 8),
                       const Text(
                         'Changer',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -442,7 +498,7 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
   Widget _buildBoutonWhatsApp() {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: 52,
       child: OutlinedButton.icon(
         style: OutlinedButton.styleFrom(
           foregroundColor: const Color(0xFF128C7E),
@@ -451,32 +507,76 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
         ),
         onPressed: _ouvrirWhatsApp,
         icon: const Icon(Icons.chat_outlined),
-        label: const Text('Écrivez-nous sur WhatsApp', style: TextStyle(fontSize: 12)),
+        label: const Text('Écrivez-nous sur WhatsApp'),
       ),
     );
   }
 
-  Widget _buildBoutonConfirmer(Color couleur) {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: FilledButton(
-        style: FilledButton.styleFrom(
-          backgroundColor: couleur,
-          foregroundColor: Colors.white,
-          shape: const StadiumBorder(),
-        ),
-        onPressed: _loading ? null : _confirmer,
-        child: _loading
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: Colors.white,
+  Widget _buildBarreBas(Color couleur) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: _bordure)),
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: couleur,
+                    foregroundColor: Colors.white,
+                    shape: const StadiumBorder(),
+                  ),
+                  onPressed: _loading ? null : _confirmer,
+                  child: _loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 4,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check),
+                            SizedBox(width: 15),
+                            Text(
+                              'Confirmer',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
-              )
-            : const Text('Confirmer', style: TextStyle(fontSize: 12)),
+              ),
+              const SizedBox(height: 10),
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.lock_outline, size: 16, color: _texteDoux),
+                  SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      'Suivi de commande jusqu\'à la livraison',
+                      style: TextStyle(color: _texteDoux, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

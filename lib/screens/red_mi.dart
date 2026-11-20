@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:hub_devices_co/models/product.dart';
 import 'package:hub_devices_co/providers/cart_provider.dart';
 import 'package:provider/provider.dart';

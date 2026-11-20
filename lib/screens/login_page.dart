@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import '../services/cmd_services.dart';
 
 class LoginPage extends StatefulWidget {
@@ -83,7 +83,7 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   const Text(
                     'Ma précommande',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -96,15 +96,23 @@ class _LoginPageState extends State<LoginPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade400),
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white),
                       borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Code de suivi',
-                          style: TextStyle(fontWeight: FontWeight.bold),
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                         ),
                         const SizedBox(height: 8),
                         TextField(
@@ -118,7 +126,13 @@ class _LoginPageState extends State<LoginPage> {
                             prefixIcon: const Icon(Icons.vpn_key_outlined),
                             errorText: _error,
                             errorMaxLines: 2,
-                            border: const OutlineInputBorder(),
+                            filled:true,
+                            fillColor: Colors.white,
+                            
+                            border: const OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(8)),
+                              borderSide: BorderSide(color: Colors.white, width: 1),
+                            ),
                           ),
                         ),
                         const SizedBox(height: 16),
@@ -126,13 +140,18 @@ class _LoginPageState extends State<LoginPage> {
                           width: double.infinity,
                           height: 48,
                           child: FilledButton(
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Color(0xFF0077B5),
+                              foregroundColor: Colors.white,
+                              textStyle: const TextStyle(fontSize: 16),
+                            ),
                             onPressed: _loading ? null : _submit,
                             child: _loading
                                 ? const SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
-                                      strokeWidth: 2,
+                                      strokeWidth: 4,
                                       color: Colors.white,
                                     ),
                                   )
