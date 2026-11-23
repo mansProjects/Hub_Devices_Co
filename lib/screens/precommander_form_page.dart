@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import '../services/cmd_services.dart';
 
 class PrecommanderFormPage extends StatefulWidget {
@@ -16,11 +15,9 @@ class PrecommanderFormPage extends StatefulWidget {
 class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
   static const String _numeroWhatsApp = '243840513896';
   static const int _tailleMaxOctets = 4 * 1024 * 1024; // 4 Mo
-
   static const Color _fondChamp = Color(0xFFF2F5FB);
   static const Color _bordure = Color(0xFFD9E2EF);
   static const Color _texteDoux = Color(0xFF6B7A90);
-
   static const List<String> _etapes = [
     'Discutez avec nous sur WhatsApp, si ce n\'est pas encore fait.',
     'Effectuez le paiement convenu sur WhatsApp.',
@@ -177,10 +174,10 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
           'Merci $nom, nous avons bien reçu votre précommande.\n\n'
           'Votre référence : $reference\n\n'
           'Notre équipe vérifie vos informations et votre preuve de '
-          'paiement. Dans 10 à 20 minutes, vous recevrez votre code '
+          'paiement. D\'ici 1h, vous recevrez votre code '
           'personnel sur WhatsApp pour suivre votre commande jusqu\'à '
           'la livraison.\n\n'
-          'Gardez votre téléphone à portée de main.',
+          'Gardez votre téléphone à portée de main !',
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -400,6 +397,17 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
             ),
             const SizedBox(height: 22),
             _buildPreuve(),
+            
+                        const SizedBox(height: 22),
+            _buildPreuve(),
+            const SizedBox(height: 18),
+            const Text(
+              'Avez-vous déjà discuté avec nous sur WhatsApp ? '
+              'Sinon, écrivez-nous avant de confirmers.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _texteDoux, fontSize: 14, height: 1.4),
+            ),
+
             if (_erreurEnvoi != null) ...[
               const SizedBox(height: 14),
               Text(
@@ -483,6 +491,8 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
                   ),
           ),
         ),
+           
+           
         if (_preuveErreur != null)
           Padding(
             padding: const EdgeInsets.only(top: 6, left: 16),
@@ -492,7 +502,9 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
             ),
           ),
       ],
+             
     );
+    
   }
 
   Widget _buildBoutonWhatsApp() {
@@ -511,6 +523,7 @@ class _PrecommanderFormPageState extends State<PrecommanderFormPage> {
       ),
     );
   }
+
 
   Widget _buildBarreBas(Color couleur) {
     return Container(

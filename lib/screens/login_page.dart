@@ -123,16 +123,19 @@ class _LoginPageState extends State<LoginPage> {
                           onSubmitted: (_) => _submit(),
                           decoration: InputDecoration(
                             hintText: 'Ex : K7X2-M9QP',
-                            prefixIcon: const Icon(Icons.vpn_key_outlined),
+                            prefixIcon: const Icon(Icons.vpn_key_outlined, color: Color.fromARGB(255, 181, 124, 0), size: 18),
                             errorText: _error,
                             errorMaxLines: 2,
                             filled:true,
-                            fillColor: Colors.white,
-                            
+                            fillColor: Color(0xFFF1F4FD),
                             border: const OutlineInputBorder(
-                              borderRadius: BorderRadius.all(Radius.circular(8)),
-                              borderSide: BorderSide(color: Colors.white, width: 1),
+                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                              borderSide: BorderSide(color: Color(0xFFD9E0F0), width: 1),
                             ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(12)),
+                              borderSide: BorderSide(color: Color(0xFFD9E0F0), width: 1),
+                            )
                           ),
                         ),
                         const SizedBox(height: 16),
